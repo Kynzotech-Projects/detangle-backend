@@ -3,7 +3,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
-import { Users, UserCheck, CalendarDays, DollarSign, Download, TrendingUp, TrendingDown } from 'lucide-react';
+import { Users, UserCheck, CalendarDays, Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { fetchDashboard } from '../api/admin';
 
 interface DashboardData {
@@ -30,15 +30,6 @@ interface DashboardData {
     firebaseProvider: string;
   }[];
 }
-
-const PROVIDER_COLORS: Record<string, string> = {
-  'google.com': '#4285F4',
-  'phone': '#10b981',
-  'apple.com': '#1a1a2e',
-  'password': '#f59e0b',
-};
-
-const MOOD_COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -96,14 +87,14 @@ export default function Dashboard() {
     },
     {
       label: 'Platform Revenue',
-      value: '$124.5k',
+      value: '₹1,24,500',
       change: '+15.3%',
       direction: 'up',
       dark: true,
     },
     {
       label: 'Therapist Payouts',
-      value: '$98.2k',
+      value: '₹98,200',
       change: '-21%',
       direction: 'down',
       dark: false,

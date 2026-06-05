@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, UserCheck, CalendarDays,
-  DollarSign, Brain, ShieldCheck, Settings, LogOut,
+  IndianRupee, Brain, ShieldCheck, Settings, LogOut,
 } from 'lucide-react';
 
 const navItems = [
@@ -9,7 +9,7 @@ const navItems = [
   { to: '/therapists', icon: UserCheck, label: 'Therapists' },
   { to: '/clients', icon: Users, label: 'Clients' },
   { to: '/sessions', icon: CalendarDays, label: 'Sessions' },
-  { to: '/earnings', icon: DollarSign, label: 'Earnings' },
+  { to: '/earnings', icon: IndianRupee, label: 'Earnings' },
   { to: '/mood-insights', icon: Brain, label: 'Mood Insights' },
 ];
 
@@ -18,7 +18,11 @@ const systemItems = [
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  onLogout?: () => void;
+}
+
+export default function Sidebar({ onLogout }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">Detangle</div>
@@ -56,7 +60,11 @@ export default function Sidebar() {
           <div className="sidebar-user-name">Admin User</div>
           <div className="sidebar-user-email">admin@detangle.in</div>
         </div>
-        <LogOut size={14} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0, cursor: 'pointer' }} />
+        <LogOut
+          size={14}
+          style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0, cursor: 'pointer' }}
+          onClick={onLogout}
+        />
       </div>
     </aside>
   );
