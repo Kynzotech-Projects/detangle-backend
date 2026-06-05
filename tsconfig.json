@@ -10,5 +10,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "detangle-admin", "detangle-flutter", "dist"]
 }

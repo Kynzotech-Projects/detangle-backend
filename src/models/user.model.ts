@@ -6,18 +6,24 @@ export interface ILocation {
     city?: string;
 }
 
+export type RegistrationStatus = "pending_otp" | "complete";
+export type AuthProvider = "phone" | "google.com" | "apple.com" | "password";
+
 export interface IUser extends Document {
     // Firebase fields
     firebaseUid: string;
-    firebaseProvider?: string;
-    emailVerified?: boolean;
+    firebaseProvider: AuthProvider;
+    emailVerified: boolean;
+    phoneVerified: boolean;
+
+    // Registration state
+    registrationStatus: RegistrationStatus;
 
     // Personal info
     firstName: string;
     lastName: string;
-    email: string;
+    email?: string;
     phoneNumber?: string;
-    password?: string;
     dateOfBirth?: Date;
     gender?: "male" | "female" | "non-binary" | "prefer-not-to-say";
     profilePictureUrl?: string;
@@ -34,25 +40,16 @@ export interface IUser extends Document {
     updatedAt: Date;
 }
 
-const LocationSchema: Schema = new Schema(
+const LocationSchema = new Schema<ILocation>(
     {
-        latitude: {
-            type: Number,
-            required: true,
-        },
-        longitude: {
-            type: Number,
-            required: true,
-        },
-        city: {
-            type: String,
-            default: null,
-        },
+        latitude: { type: Number, required: true },
+        longitude: { type: Number, required: true },
+        city: { type: String, default: null },
     },
     { _id: false }
 );
 
-const UserSchema: Schema = new Schema(
+const UserSchema = new Schema<IUser>(
     {
         // Firebase fields
         firebaseUid: {
@@ -63,11 +60,23 @@ const UserSchema: Schema = new Schema(
         },
         firebaseProvider: {
             type: String,
-            default: null,
+            enum: ["phone", "google.com", "apple.com", "password"],
+            required: true,
         },
         emailVerified: {
             type: Boolean,
             default: false,
+        },
+        phoneVerified: {
+            type: Boolean,
+            default: false,
+        },
+
+        // Registration state
+        registrationStatus: {
+            type: String,
+            enum: ["pending_otp", "complete"],
+            default: "pending_otp",
         },
 
         // Personal info
@@ -83,20 +92,16 @@ const UserSchema: Schema = new Schema(
         },
         email: {
             type: String,
-            required: true,
-            unique: true,
+            default: null,
             lowercase: true,
             trim: true,
+            sparse: true, // allows multiple null values with unique index
         },
         phoneNumber: {
             type: String,
             default: null,
             trim: true,
-        },
-        password: {
-            type: String,
-            default: null,
-            select: false, // Excluded from queries by default
+            sparse: true,
         },
         dateOfBirth: {
             type: Date,

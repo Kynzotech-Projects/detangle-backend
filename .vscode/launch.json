@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend (ts-node-dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/ts-node-dev",
+      "runtimeArgs": ["--respawn", "--transpile-only", "src/index.ts"],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Flutter (detangle-flutter)",
+      "type": "dart",
+      "request": "launch",
+      "program": "${workspaceFolder}/detangle-flutter/lib/main.dart",
+      "cwd": "${workspaceFolder}/detangle-flutter",
+      "flutterMode": "debug",
+      "args": ["--dart-define=ENV=dev"]
+    },
+    {
+      "name": "Admin Panel (Vite)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/detangle-admin",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Backend + Flutter",
+      "configurations": ["Backend (ts-node-dev)", "Flutter (detangle-flutter)"],
+      "stopAll": true
+    },
+    {
+      "name": "Backend + Admin Panel",
+      "configurations": ["Backend (ts-node-dev)", "Admin Panel (Vite)"],
+      "stopAll": true
+    },
+    {
+      "name": "All (Backend + Flutter + Admin)",
+      "configurations": ["Backend (ts-node-dev)", "Flutter (detangle-flutter)", "Admin Panel (Vite)"],
+      "stopAll": true
+    }
+  ]
+}
