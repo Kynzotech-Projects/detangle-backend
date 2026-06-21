@@ -120,3 +120,111 @@ export const getTherapistClients = async (req: AuthRequest, res: Response): Prom
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
+// ---------------------------------------------------------------------------
+// GET /api/therapist/clients/:clientId — full client profile for therapist
+// ---------------------------------------------------------------------------
+export const getClientProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const therapist = await getTherapist(req.user!.uid);
+        const clientId = req.params.clientId;
+
+        const user = await User.findById(clientId).select("firstName lastName profilePictureUrl gender dateOfBirth");
+        if (!user) {
+            res.status(404).json({ error: "Client not found" });
+            return;
+        }
+
+        const [completedSessions, activeSub] = await Promise.all([
+            Appointment.countDocuments({
+                therapistId: therapist._id,
+                userId: clientId,
+                status: "completed",
+            }),
+            Subscription.findOne({
+                userId: clientId,
+                status: "active",
+                expiresAt: { $gt: new Date() },
+            }).select("sessionsTotal sessionsUsed"),
+        ]);
+
+        const remaining = activeSub ? activeSub.sessionsTotal - activeSub.sessionsUsed : 0;
+
+        res.status(200).json({
+            client: {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                profilePictureUrl: user.profilePictureUrl,
+                gender: user.gender,
+                dateOfBirth: user.dateOfBirth,
+                completedSessions,
+                remaining,
+            },
+        });
+    } catch (error: any) {
+        if (error.message === "THERAPIST_NOT_FOUND") {
+            res.status(404).json({ error: "Therapist not found" });
+            return;
+        }
+        console.error("getClientProfile error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+// ---------------------------------------------------------------------------
+// GET /api/therapist/clients/:clientId/sessions — session history for a client
+// ---------------------------------------------------------------------------
+export const getClientSessions = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const therapist = await getTherapist(req.user!.uid);
+        const clientId = req.params.clientId;
+
+        const sessions = await Appointment.find({
+            therapistId: therapist._id,
+            userId: clientId,
+            status: "completed",
+        })
+            .sort({ date: -1 })
+            .select("sessionType date startTime endTime status")
+            .limit(20);
+
+        res.status(200).json({ sessions });
+    } catch (error: any) {
+        if (error.message === "THERAPIST_NOT_FOUND") {
+            res.status(404).json({ error: "Therapist not found" });
+            return;
+        }
+        console.error("getClientSessions error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+// ---------------------------------------------------------------------------
+// GET /api/therapist/clients/:clientId/mood — client's weekly mood for therapist
+// ---------------------------------------------------------------------------
+export const getClientMood = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        await getTherapist(req.user!.uid);
+        const clientId = req.params.clientId;
+
+        // Get mood for last 7 days
+        const { MoodLog } = await import("../models/mood.model");
+        const now = new Date();
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        const moods = await MoodLog.find({
+            userId: clientId,
+            loggedDate: { $gte: weekAgo.toISOString().split('T')[0], $lte: now.toISOString().split('T')[0] },
+        }).sort({ loggedDate: 1 }).select("mood loggedDate");
+
+        res.status(200).json({ moods });
+    } catch (error: any) {
+        if (error.message === "THERAPIST_NOT_FOUND") {
+            res.status(404).json({ error: "Therapist not found" });
+            return;
+        }
+        console.error("getClientMood error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};

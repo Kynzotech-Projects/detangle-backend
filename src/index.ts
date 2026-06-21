@@ -12,6 +12,7 @@ import appointmentRoutes from "./routes/appointment.routes";
 import zegoRoutes from "./routes/zego.routes";
 import moodRoutes from "./routes/mood.routes";
 import uploadRoutes from "./routes/upload.routes";
+import taskRoutes from "./routes/task.routes";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/zego", zegoRoutes);
 app.use("/api/mood", moodRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/tasks", taskRoutes);
 
 // Health check
 app.get("/health", (_req, res) => {
