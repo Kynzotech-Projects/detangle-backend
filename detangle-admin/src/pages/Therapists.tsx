@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Search, Plus, Trash2, RefreshCw, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Plus, Trash2, RefreshCw, X, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
 import { fetchTherapists, createTherapist, deleteTherapist, resendTherapistCredentials, updateTherapist, uploadImage } from '../api/admin';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -449,6 +449,8 @@ export default function Therapists() {
   const [showAdd, setShowAdd] = useState(false);
   const [resending, setResending] = useState<string | null>(null);
   const [toast, setToast] = useState('');
+  const [editingTherapist, setEditingTherapist] = useState<Therapist | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -653,6 +655,16 @@ export default function Therapists() {
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button
                         className="btn btn-outline btn-sm"
+                        onClick={() => {
+                          setEditingTherapist(t);
+                          setShowEditModal(true);
+                        }}
+                        title="Edit therapist"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        className="btn btn-outline btn-sm"
                         onClick={() => handleResend(t._id)}
                         disabled={resending === t._id}
                         title="Resend login credentials"
@@ -700,6 +712,190 @@ export default function Therapists() {
           onCreated={() => { load(); showToast('Therapist created! Credentials sent via email.'); }}
         />
       )}
+
+      {showEditModal && editingTherapist && (
+        <EditTherapistModal
+          therapist={editingTherapist}
+          onClose={() => { setShowEditModal(false); setEditingTherapist(null); }}
+          onSaved={() => { load(); showToast('Therapist updated!'); setShowEditModal(false); setEditingTherapist(null); }}
+        />
+      )}
+    </div>
+  );
+}
+
+
+// ── Edit Therapist Modal ─────────────────────────────────────────────────────
+
+function EditTherapistModal({ therapist, onClose, onSaved }: {
+  therapist: Therapist;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [form, setForm] = useState({
+    firstName: therapist.firstName,
+    lastName: therapist.lastName,
+    email: therapist.email,
+    phoneNumber: therapist.phoneNumber,
+    gender: therapist.gender,
+    city: therapist.city,
+    state: therapist.state,
+    licenseType: therapist.licenseType,
+    registrationNumber: therapist.registrationNumber,
+    registrationCouncil: therapist.registrationCouncil,
+    yearsOfExperience: String(therapist.yearsOfExperience),
+    specializations: therapist.specializations,
+    bio: (therapist as any).bio || '',
+    consultationFee: String((therapist as any).consultationFee || ''),
+    status: therapist.status,
+    profilePictureUrl: therapist.profilePictureUrl || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const set = (key: string, value: unknown) => setForm(f => ({ ...f, [key]: value }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      await updateTherapist(therapist._id, {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        phoneNumber: form.phoneNumber,
+        gender: form.gender,
+        city: form.city,
+        state: form.state,
+        licenseType: form.licenseType,
+        registrationNumber: form.registrationNumber,
+        registrationCouncil: form.registrationCouncil,
+        yearsOfExperience: Number(form.yearsOfExperience),
+        specializations: form.specializations,
+        bio: form.bio,
+        consultationFee: Number(form.consultationFee),
+        status: form.status,
+        profilePictureUrl: form.profilePictureUrl || undefined,
+      });
+      onSaved();
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } } };
+      setError(err?.response?.data?.error || 'Failed to update therapist.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 560, maxHeight: '85vh', overflow: 'auto' }}>
+        <div className="modal-header">
+          <h2>Edit Therapist</h2>
+          <button className="modal-close" onClick={onClose}><X size={18} /></button>
+        </div>
+
+        {error && <div className="alert alert-error">{error}</div>}
+
+        <div className="modal-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <div className="modal-field">
+            <label>First Name</label>
+            <input value={form.firstName} onChange={e => set('firstName', e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Last Name</label>
+            <input value={form.lastName} onChange={e => set('lastName', e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Email (read-only)</label>
+            <input value={form.email} disabled style={{ opacity: 0.6 }} />
+          </div>
+          <div className="modal-field">
+            <label>Phone</label>
+            <input value={form.phoneNumber} onChange={e => set('phoneNumber', e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>City</label>
+            <input value={form.city} onChange={e => set('city', e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>State</label>
+            <input value={form.state} onChange={e => set('state', e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>License Type</label>
+            <input value={form.licenseType} onChange={e => set('licenseType', e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Registration Number</label>
+            <input value={form.registrationNumber} onChange={e => set('registrationNumber', e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Years of Experience</label>
+            <input type="number" value={form.yearsOfExperience} onChange={e => set('yearsOfExperience', e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Consultation Fee (₹)</label>
+            <input type="number" value={form.consultationFee} onChange={e => set('consultationFee', e.target.value)} />
+          </div>
+          <div className="modal-field" style={{ gridColumn: 'span 2' }}>
+            <label>Status</label>
+            <select value={form.status} onChange={e => set('status', e.target.value)}>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="pending_verification">Pending Verification</option>
+            </select>
+          </div>
+          <div className="modal-field" style={{ gridColumn: 'span 2' }}>
+            <label>Bio</label>
+            <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={3} style={{ width: '100%', resize: 'vertical' }} />
+          </div>
+          <div className="modal-field" style={{ gridColumn: 'span 2' }}>
+            <label>Profile Picture</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <input
+                type="file"
+                accept="image/*"
+                id="edit-therapist-photo"
+                style={{ display: 'none' }}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    const result = await uploadImage(file, 'therapist_pictures');
+                    set('profilePictureUrl', result.url);
+                  } catch {
+                    alert('Failed to upload image');
+                  }
+                }}
+              />
+              <label htmlFor="edit-therapist-photo" style={{
+                padding: '8px 16px', background: '#D19371', color: '#fff',
+                borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 500,
+              }}>
+                {form.profilePictureUrl ? 'Change Photo' : 'Upload Photo'}
+              </label>
+              {form.profilePictureUrl && (
+                <>
+                  <img src={form.profilePictureUrl} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+                  <button
+                    type="button"
+                    onClick={() => set('profilePictureUrl', '')}
+                    style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, cursor: 'pointer' }}
+                  >
+                    Remove
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

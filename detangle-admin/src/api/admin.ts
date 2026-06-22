@@ -49,3 +49,16 @@ export const uploadImage = (file: File, folder = 'therapist_pictures') => {
     headers: { 'Content-Type': 'multipart/form-data' },
   }).then(r => r.data);
 };
+
+// ── Sessions ──
+export const fetchSessions = (params: { page?: number; limit?: number; status?: string }) =>
+  api.get('/admin/sessions', { params }).then(r => r.data);
+
+// ── Mood Insights ──
+export const fetchMoodInsights = () => api.get('/admin/mood-insights').then(r => r.data);
+
+// ── Plans ──
+export const fetchPlans = () => api.get('/admin/plans').then(r => r.data);
+export const createPlan = (data: Record<string, unknown>) => api.post('/admin/plans', data).then(r => r.data);
+export const updatePlanAdmin = (id: string, data: Record<string, unknown>) => api.patch(`/admin/plans/${id}`, data).then(r => r.data);
+export const deletePlan = (id: string) => api.delete(`/admin/plans/${id}`).then(r => r.data);

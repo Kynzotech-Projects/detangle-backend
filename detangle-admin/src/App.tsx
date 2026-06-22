@@ -5,6 +5,10 @@ import Topbar from './components/Topbar';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Therapists from './pages/Therapists';
+import Sessions from './pages/Sessions';
+import MoodInsights from './pages/MoodInsights';
+import AdminManagement from './pages/AdminManagement';
+import Settings from './pages/Settings';
 import Placeholder from './pages/Placeholder';
 import Login from './pages/Login';
 import { setAdminToken, getAdminToken, clearAdminToken } from './api/client';
@@ -51,11 +55,11 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/therapists" element={<Therapists />} />
-          <Route path="/sessions" element={<Placeholder title="Sessions" />} />
+          <Route path="/sessions" element={<Sessions />} />
           <Route path="/earnings" element={<Placeholder title="Earnings" />} />
-          <Route path="/mood-insights" element={<Placeholder title="Mood Insights" />} />
-          <Route path="/admin-management" element={<Placeholder title="Admin Management" />} />
-          <Route path="/settings" element={<Placeholder title="Settings" />} />
+          <Route path="/mood-insights" element={<MoodInsights />} />
+          <Route path="/admin-management" element={<AdminManagement />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>
     </BrowserRouter>
