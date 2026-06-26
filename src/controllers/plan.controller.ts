@@ -150,6 +150,74 @@ export const topUpSubscription = async (req: AuthRequest, res: Response): Promis
 };
 
 // ---------------------------------------------------------------------------
+// AUTHENTICATED — POST /api/plans/change-therapist
+// Changes the therapist on the current active subscription
+// Body: { newTherapistId, survey: { comfortable, concernAddressed, improveReason, notes } }
+// ---------------------------------------------------------------------------
+export const changeTherapist = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const user = await User.findOne({ firebaseUid: req.user!.uid });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+
+        const { newTherapistId, survey } = req.body;
+
+        if (!newTherapistId) {
+            res.status(400).json({ error: "newTherapistId is required" });
+            return;
+        }
+
+        // Find active subscription
+        const subscription = await Subscription.findOne({
+            userId: user._id,
+            status: "active",
+            expiresAt: { $gt: new Date() },
+        }).sort({ createdAt: -1 });
+
+        if (!subscription) {
+            res.status(400).json({ error: "No active subscription to change therapist on" });
+            return;
+        }
+
+        // Verify therapist exists
+        const { Therapist } = await import("../models/therapist.model");
+        const therapist = await Therapist.findById(newTherapistId);
+        if (!therapist || therapist.status !== "active") {
+            res.status(404).json({ error: "Therapist not found or inactive" });
+            return;
+        }
+
+        // Save survey data
+        if (survey) {
+            const { TherapistSurvey } = await import("../models/therapist-survey.model");
+            await TherapistSurvey.create({
+                userId: user._id,
+                previousTherapistId: subscription.therapistId,
+                newTherapistId,
+                comfortable: survey.comfortable ?? null,
+                concernAddressed: survey.concernAddressed ?? null,
+                improveReason: survey.improveReason ?? null,
+                notes: survey.notes ?? null,
+            });
+        }
+
+        // Update subscription therapist
+        subscription.therapistId = newTherapistId;
+        await subscription.save();
+
+        res.status(200).json({
+            message: "Therapist changed successfully",
+            subscription,
+        });
+    } catch (error) {
+        console.error("changeTherapist error:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+// ---------------------------------------------------------------------------
 // AUTHENTICATED — GET /api/plans/my-subscription
 // ---------------------------------------------------------------------------
 export const getMySubscription = async (req: AuthRequest, res: Response): Promise<void> => {

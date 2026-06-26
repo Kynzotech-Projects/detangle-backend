@@ -175,6 +175,31 @@ em { font-style: normal; color: #D19371; }
 @keyframes moodBounce { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-10px) scale(1.04)} }
 .mf:hover { transform: scale(1.2) !important; }
 
+/* ── Plans / Pricing ────────────────────────────────────────────────── */
+.plans { padding: 80px 0; background: #fdfcfb; }
+.plans-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.plan-card {
+  padding: 28px 24px; border-radius: 20px; background: #fff;
+  border: 1px solid rgba(0,0,0,0.04); position: relative;
+  transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.plan-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(209,147,113,0.1); }
+.plan-popular { border: 2px solid #D19371; }
+.plan-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  padding: 4px 14px; border-radius: 20px; background: #D19371; color: #fff;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.plan-card h3 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+.plan-price { font-size: 28px; font-weight: 800; color: #D19371; margin-bottom: 4px; }
+.plan-desc { font-size: 13px; color: #888; margin-bottom: 18px; }
+.plan-features { display: flex; flex-direction: column; gap: 8px; }
+.plan-features li { font-size: 13px; color: #555; padding-left: 20px; position: relative; }
+.plan-features li::before { content: '✓'; position: absolute; left: 0; color: #D19371; font-weight: 700; }
+
+@media (max-width: 1024px) { .plans-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .plans-grid { grid-template-columns: 1fr; } }
+
 /* ── Download ──────────────────────────────────────────────────────── */
 .download {
   padding: 80px 0; text-align: center; color: #fff;

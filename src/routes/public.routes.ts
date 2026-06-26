@@ -33,6 +33,12 @@ router.get("/therapists", async (req: Request, res: Response): Promise<void> => 
             query.languagesSpoken = { $in: [new RegExp(language, "i")] };
         }
 
+        // Exclude a specific therapist (used when changing therapist)
+        const exclude = req.query.exclude as string | undefined;
+        if (exclude) {
+            query._id = { $ne: exclude };
+        }
+
         const [therapists, total] = await Promise.all([
             Therapist.find(query)
                 .sort({ yearsOfExperience: -1, createdAt: -1 })
